@@ -1,0 +1,9 @@
+include ':microservices:reader'
+include ':microservices:book'
+include ':microservices:rate'
+include ':microservices:comment'
+include ':microservices:book-composite'
+include 'api'
+include 'util'
+
+

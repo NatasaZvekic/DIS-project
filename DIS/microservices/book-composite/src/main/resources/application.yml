@@ -1,0 +1,22 @@
+server.port: 7000
+server.error.include-message: always
+
+app:
+  book:
+    host: localhost
+    port: 7001
+  reader:
+    host: localhost
+    port: 7004
+  rate:
+    host: localhost
+    port: 7003
+  comment:
+    host: localhost
+    port: 7002
+
+logging:
+  level:
+    root: INFO
+    se.magnus: DEBUG
+
