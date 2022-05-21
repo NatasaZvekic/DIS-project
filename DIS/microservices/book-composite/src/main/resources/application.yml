@@ -20,3 +20,21 @@ logging:
     root: INFO
     se.magnus: DEBUG
 
+---
+spring.profiles: docker
+
+server.port: 8080
+
+app:
+  book:
+    host: book
+    port: 8080
+  review:
+    host: review
+    port: 8080
+  comment:
+    host: comment
+    port: 8080
+  rate:
+    host: rate
+    port: 8080
