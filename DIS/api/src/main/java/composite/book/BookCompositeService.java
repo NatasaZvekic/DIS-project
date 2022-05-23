@@ -1,17 +1,19 @@
 package composite.book;
 
-import core.comments.Comment;
-import core.rates.Rate;
-import core.readers.Reader;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 public interface BookCompositeService {
 
     @GetMapping(
             value    = "/book-composite/{bookId}",
             produces = "application/json")
-    BookAggregate getBook(@PathVariable int bookId);
+    BookAggregate getBookComposite(@PathVariable int bookId);
+
+    @PostMapping(
+            value    = "/book-composite",
+            consumes = "application/json")
+    void createCompositeBook(@RequestBody BookAggregate body);
+
+    @DeleteMapping(value = "/book-composite/{bookId}")
+    void deleteCompositeBook(@PathVariable int bookId);
 }

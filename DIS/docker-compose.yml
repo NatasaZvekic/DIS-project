@@ -6,24 +6,32 @@ services:
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mongodb
 
   rate:
     build: microservices/rate
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mongodb
 
   reader:
     build: microservices/reader
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mongodb
 
-  commend:
+  comment:
     build: microservices/comment
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mongodb
 
   book-composite:
     build: microservices/book-composite
@@ -32,3 +40,10 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+
+  mongodb:
+    image: mongo:3.6.9
+    mem_limit: 350m
+    ports:
+      - "27017:27017"
+    command: mongod --smallfiles

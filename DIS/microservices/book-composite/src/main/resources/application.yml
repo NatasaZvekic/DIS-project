@@ -29,8 +29,8 @@ app:
   book:
     host: book
     port: 8080
-  review:
-    host: review
+  reader:
+    host: reader
     port: 8080
   comment:
     host: comment
