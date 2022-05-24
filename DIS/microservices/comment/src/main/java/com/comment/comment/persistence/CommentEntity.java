@@ -21,9 +21,7 @@ public class CommentEntity {
     public CommentEntity() {
     }
 
-    public CommentEntity(String id, Integer version, int bookId, int commentId, String comment) {
-        this.id = id;
-        this.version = version;
+    public CommentEntity(int bookId, int commentId, String comment) {
         this.bookId = bookId;
         this.commentId = commentId;
         this.comment = comment;

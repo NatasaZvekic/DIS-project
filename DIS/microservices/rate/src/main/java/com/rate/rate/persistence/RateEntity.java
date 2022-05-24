@@ -21,9 +21,7 @@ public class RateEntity {
     public RateEntity() {
     }
 
-    public RateEntity(String id, Integer version, int bookId, int rateId, int rate) {
-        this.id = id;
-        this.version = version;
+    public RateEntity(int bookId, int rateId, int rate) {
         this.bookId = bookId;
         this.rateId = rateId;
         this.rate = rate;

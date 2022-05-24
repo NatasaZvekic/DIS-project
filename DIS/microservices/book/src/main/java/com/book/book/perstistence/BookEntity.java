@@ -22,9 +22,7 @@ public class BookEntity {
     public BookEntity() {
     }
 
-    public BookEntity(String id, Integer version, int bookId, String name) {
-        this.id = id;
-        this.version = version;
+    public BookEntity( int bookId, String name) {
         this.bookId = bookId;
         this.bookName = name;
     }

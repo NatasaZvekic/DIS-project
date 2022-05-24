@@ -22,9 +22,7 @@ public class ReaderEntity {
     public ReaderEntity() {
     }
 
-    public ReaderEntity(String id, Integer version, int bookId, int readerId, String firstName, String lastName) {
-        this.id = id;
-        this.version = version;
+    public ReaderEntity(int bookId, int readerId, String firstName, String lastName) {
         this.bookId = bookId;
         this.readerId = readerId;
         this.firstName = firstName;
