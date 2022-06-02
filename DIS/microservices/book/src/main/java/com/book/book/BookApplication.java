@@ -27,17 +27,4 @@ public class BookApplication {
 		LOG.info("Connected to MongoDb: " + mongodDbHost + ":" + mongodDbPort);
 	}
 
-	@Autowired
-	MongoOperations mongoTemplate;
-
-	@EventListener(ContextRefreshedEvent.class)
-	public void initIndicesAfterStartup() {
-
-		MappingContext<? extends MongoPersistentEntity<?>, MongoPersistentProperty> mappingContext = mongoTemplate.getConverter().getMappingContext();
-		IndexResolver resolver = new MongoPersistentEntityIndexResolver(mappingContext);
-
-		IndexOperations indexOps = mongoTemplate.indexOps(BookEntity.class);
-		resolver.resolveIndexFor(BookEntity.class).forEach(e -> indexOps.ensureIndex(e));
-	}
-
 }

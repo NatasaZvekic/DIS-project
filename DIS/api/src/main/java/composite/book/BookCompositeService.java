@@ -1,19 +1,20 @@
 package composite.book;
 
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 public interface BookCompositeService {
 
     @GetMapping(
             value    = "/book-composite/{bookId}",
             produces = "application/json")
-    BookAggregate getBookComposite(@PathVariable int bookId);
+    Mono<BookAggregate> getBookComposite(@PathVariable int bookId);
 
     @PostMapping(
             value    = "/book-composite",
             consumes = "application/json")
-    void createCompositeBook(@RequestBody BookAggregate body);
+    Mono<Void> createCompositeBook(@RequestBody BookAggregate body);
 
     @DeleteMapping(value = "/book-composite/{bookId}")
-    void deleteCompositeBook(@PathVariable int bookId);
+    Mono<Void> deleteCompositeBook(@PathVariable int bookId);
 }

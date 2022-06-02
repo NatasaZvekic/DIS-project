@@ -6,9 +6,13 @@ import core.readers.ReaderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.RestController;
 import core.readers.Reader;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import util.exceptions.InvalidInputException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,37 +28,33 @@ public class ReaderServiceImpl implements ReaderService {
     }
 
     @Override
-    public List<Reader> getReader(int bookId) {
-        LOG.debug("No user found for bookId={}", bookId);
+    public Flux<Reader> getReader(int bookId) {
+        LOG.debug("No reader found for bookId={}", bookId);
 
         if (bookId < 1) throw new InvalidInputException("Invalid bookId: " + bookId);
 
-        List<ReaderEntity> entityList = repository.findByBookId(bookId);
-        List<Reader> list = mapper.entityListToApiList(entityList);
-
-        LOG.debug("/readers response size: {}", list.size());
-
-        return list;
+        return repository.findByBookId(bookId)
+                .log()
+                .map(e -> mapper.entityToApi(e));
     }
 
     @Override
-    public Reader createReader(Reader body) {
-        try {
-            ReaderEntity entity = mapper.apiToEntity(body);
-            ReaderEntity newEntity = repository.save(entity);
+    public Mono<Reader> createReader(Reader body) {
+        ReaderEntity entity = mapper.apiToEntity(body);
+        Mono<Reader> newEntity = repository.save(entity)
+                .log()
+                .onErrorMap(
+                        DuplicateKeyException.class,
+                        ex -> new InvalidInputException("Duplicate key, Book Id: " + body.getBookId() + ", Reader Id:" + body.getReaderId()))
+                .map(e -> mapper.entityToApi(e));
 
-            LOG.debug("createReader: created a reader entity: {}/{}", body.getBookId(), body.getReaderId());
-            return mapper.entityToApi(newEntity);
-
-        } catch (DataIntegrityViolationException dive) {
-            throw new InvalidInputException("Duplicate key, bookId: " + body.getBookId() + ", reader Id:" + body.getReaderId());
-        }
+        return newEntity;
     }
 
     @Override
-    public void deleteReader(int bookId) {
+    public Mono<Void> deleteReader(int bookId) {
         LOG.debug("deleteReaders: tries to delete readers for the bookId with bookId: {}", bookId);
-        repository.deleteAll(repository.findByBookId(bookId));
+        return repository.deleteAll(repository.findByBookId(bookId));
     }
 
 }

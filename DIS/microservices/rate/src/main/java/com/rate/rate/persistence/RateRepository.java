@@ -1,8 +1,11 @@
 package com.rate.rate.persistence;
 
-import org.springframework.data.repository.CrudRepository;
+
+import reactor.core.publisher.Flux;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
 import java.util.List;
 
-public interface RateRepository extends CrudRepository<RateEntity, String> {
-    List<RateEntity> findByBookId(int bookId);
+public interface RateRepository extends ReactiveCrudRepository<RateEntity, String> {
+    Flux<RateEntity> findByBookId(int bookId);
 }

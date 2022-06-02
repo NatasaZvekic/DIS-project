@@ -8,8 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 import util.exceptions.InvalidInputException;
 import util.exceptions.NotFoundException;
+
+import static reactor.core.publisher.Mono.error;
 
 @RestController
 public class BookServiceImpl implements BookService {
@@ -23,38 +26,35 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book getBook(int bookId) {
-        LOG.debug("No publisher found for publisherId={}", bookId);
+    public Mono<Book> getBook(int bookId) {
+        LOG.debug("No book found for bookId={}", bookId);
 
-        if (bookId < 1) throw new InvalidInputException("Invalid commentId: " + bookId);
+        if (bookId < 1) throw new InvalidInputException("Invalid bookId: " + bookId);
 
-        BookEntity entity = repository.findByBookId(bookId)
-                .orElseThrow(() -> new NotFoundException("No book found for bookId: " + bookId));
-
-        Book response = mapper.entityToApi(entity);
-
-        LOG.debug("getBook: found bookId: {}", response.getBookId());
-
-        return response;
+        return repository.findByBookId(bookId)
+                .switchIfEmpty(error(new NotFoundException("No book found for bookId: " + bookId)))
+                .log()
+                .map(e -> mapper.entityToApi(e));
     }
 
     @Override
-    public Book createBook(Book body) {
-        try {
-            BookEntity entity = mapper.apiToEntity(body);
-            BookEntity newEntity = repository.save(entity);
+    public Mono<Book> createBook(Book body) {
+        if (body.getBookId() < 1) throw new InvalidInputException("Invalid bookId: " + body.getBookId());
 
-            LOG.debug("createBook: entity created for bookId: {}", body.getBookId());
-            return mapper.entityToApi(newEntity);
+        BookEntity entity = mapper.apiToEntity(body);
+        Mono<Book> newEntity = repository.save(entity)
+                .log()
+                .onErrorMap(
+                        DuplicateKeyException.class,
+                        ex -> new InvalidInputException("Duplicate key, book Id: " + body.getBookId()))
+                .map(e -> mapper.entityToApi(e));
 
-        } catch (DuplicateKeyException dke) {
-            throw new InvalidInputException("Duplicate key, book Id: " + body.getBookId());
-        }
+        return newEntity;
     }
 
     @Override
-    public void deleteBook(int bookId) {
+    public Mono<Void> deleteBook(int bookId) {
         LOG.debug("deleteBook: tries to delete an entity with bookId: {}", bookId);
-        repository.findByBookId(bookId).ifPresent(e -> repository.delete(e));
+        return repository.findByBookId(bookId).log().map(e -> repository.delete(e)).flatMap(e -> e);
     }
 }

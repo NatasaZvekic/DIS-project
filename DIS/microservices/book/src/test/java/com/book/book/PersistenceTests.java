@@ -3,62 +3,90 @@ package com.book.book;
 import com.book.book.perstistence.BookEntity;
 import com.book.book.perstistence.BookRepository;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.testcontainers.containers.MongoDBContainer;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
 
-@RunWith(SpringRunner.class)
-@DataMongoTest
-public class PersistenceTests {
+@DataMongoTest(excludeAutoConfiguration = EmbeddedMongoAutoConfiguration.class)
+public class PersistenceTests extends MongoDbTestBase {
 
     @Autowired
     private BookRepository repository;
 
     private BookEntity savedEntity;
 
-    @Before
-   	public void setupDb() {
-   		repository.deleteAll();
-        BookEntity entity = new BookEntity(1, "Test book");
-        savedEntity = repository.save(entity);
+    @BeforeEach
+    public void setupDb() {
+        StepVerifier.create(repository.deleteAll()).verifyComplete();
 
-        assertEquals(entity, savedEntity);
+        BookEntity entity = new BookEntity(1, "Test book");
+        StepVerifier.create(repository.save(entity))
+                .expectNextMatches(createdEntity -> {
+                    savedEntity = createdEntity;
+                    return areBookEqual(entity, savedEntity);
+                })
+                .verifyComplete();
     }
 
 
     @Test
     public void getBookById() {
-        Optional<BookEntity> entityList = repository.findByBookId(savedEntity.getBookId());
-        assertTrue(entityList.isPresent());
+        StepVerifier.create(repository.findByBookId(savedEntity.getBookId()))
+                .expectNextMatches(foundEntity -> areBookEqual(savedEntity, foundEntity))
+                .verifyComplete();
     }
 
     @Test
-   	public void create() {
-        BookEntity newEntity = new BookEntity(7, "Test book");
-        repository.save(newEntity);
+    public void create() {
+        BookEntity entity = new BookEntity(1, "Test book");
+        StepVerifier.create(repository.save(entity))
+                .expectNextMatches(createdEntity -> entity.getBookId() == createdEntity.getBookId())
+                .verifyComplete();
 
-        assertEquals(2, repository.count());
+        StepVerifier.create(repository.existsById(entity.getId())).expectNext(true).verifyComplete();
     }
 
     @Test
-   	public void update() {
-        savedEntity.setBookName("Update");
-        repository.save(savedEntity);
+    public void update() {
+        savedEntity.setBookName("Updated name");
+        StepVerifier.create(repository.save(savedEntity))
+                .expectNextMatches(updatedEntity -> updatedEntity.getBookName().equals("Updated name"))
+                .verifyComplete();
 
-        BookEntity foundEntity = repository.findById(savedEntity.getId()).get();
-        assertEquals("Update", foundEntity.getBookName());
+        StepVerifier.create(repository.findById(savedEntity.getId()))
+                .expectNextMatches(foundEntity ->
+                        foundEntity.getBookName().equals("Updated name"))
+                .verifyComplete();
+
     }
 
     @Test
-   	public void delete() {
-        repository.delete(savedEntity);
-        assertFalse(repository.existsById(savedEntity.getId()));
+    void delete() {
+        StepVerifier.create(repository.delete(savedEntity)).verifyComplete();
+        StepVerifier.create(repository.existsById(savedEntity.getId())).expectNext(false).verifyComplete();
+    }
+
+    private boolean areBookEqual(BookEntity expectedEntity, BookEntity actualEntity) {
+        return
+                (expectedEntity.getId().equals(actualEntity.getId()))
+                        && (expectedEntity.getVersion() == actualEntity.getVersion())
+                        && (expectedEntity.getBookId() == actualEntity.getBookId())
+                        && (expectedEntity.getBookName().equals(actualEntity.getBookName()));
     }
 }
+
+
+

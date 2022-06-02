@@ -5,10 +5,14 @@ import com.comment.comment.persistence.CommentRepository;
 import core.comments.Comment;
 import core.comments.CommentsService;
 import core.rates.Rate;
+import core.readers.Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import util.exceptions.InvalidInputException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,37 +31,33 @@ public class CommentServiceImpl implements CommentsService {
     }
 
     @Override
-    public List<Comment> getComments(int bookId) {
-        LOG.debug("No publisher found for publisherId={}", bookId);
+    public Flux<Comment> getComments(int bookId) {
+        LOG.debug("No comment found for commentId={}", bookId);
 
         if (bookId < 1) throw new InvalidInputException("Invalid commentId: " + bookId);
 
-        List<CommentEntity> entityList = repository.findByBookId(bookId);
-        List<Comment> list = mapper.entityListToApiList(entityList);
-
-        LOG.debug("/comments response size: {}", list.size());
-
-        return list;
+        return repository.findByBookId(bookId)
+                .log()
+                .map(e -> mapper.entityToApi(e));
     }
 
     @Override
-    public Comment createComment(Comment body) {
-        try {
-            CommentEntity entity = mapper.apiToEntity(body);
-            CommentEntity newEntity = repository.save(entity);
+    public Mono<Comment> createComment(Comment body) {
+        CommentEntity entity = mapper.apiToEntity(body);
+        Mono<Comment> newEntity = repository.save(entity)
+                .log()
+                .onErrorMap(
+                        DuplicateKeyException.class,
+                        ex -> new InvalidInputException("Duplicate key, Book Id: " + body.getBookId() + ", Comment Id:" + body.getCommentId()))
+                .map(e -> mapper.entityToApi(e));
 
-            LOG.debug("createComment: created a comment entity: {}/{}", body.getBookId(), body.getCommentId());
-            return mapper.entityToApi(newEntity);
-
-        } catch (DataIntegrityViolationException dive) {
-            throw new InvalidInputException("Duplicate key, bookId: " + body.getBookId() + ", reader Id:" + body.getCommentId());
-        }
+        return newEntity;
     }
 
     @Override
-    public void deleteComment(int bookId) {
+    public Mono<Void> deleteComment(int bookId) {
         LOG.debug("deleteComment: tries to delete comment for the bookId with bookId: {}", bookId);
-        repository.deleteAll(repository.findByBookId(bookId));
+       return repository.deleteAll(repository.findByBookId(bookId));
     }
 
 }

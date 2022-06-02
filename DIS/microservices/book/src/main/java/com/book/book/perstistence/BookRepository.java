@@ -2,9 +2,11 @@ package com.book.book.perstistence;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
-public interface BookRepository extends PagingAndSortingRepository<BookEntity, String> {
-        Optional<BookEntity> findByBookId(int bookId);
+public interface BookRepository extends ReactiveCrudRepository<BookEntity, String> {
+        Mono<BookEntity> findByBookId(int bookId);
 }

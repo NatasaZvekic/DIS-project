@@ -2,18 +2,15 @@ package com.rate.rate.services;
 
 import com.rate.rate.persistence.RateEntity;
 import com.rate.rate.persistence.RateRepository;
-import core.comments.Comment;
 import core.rates.Rate;
 import core.rates.RateService;
-import core.readers.Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import util.exceptions.InvalidInputException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 public class RateServiceImpl implements RateService {
@@ -28,37 +25,33 @@ public class RateServiceImpl implements RateService {
     }
 
     @Override
-    public List<Rate> getRate(int bookId) {
-        LOG.debug("No genre found for rateId={}", bookId);
+    public Flux<Rate> getRate(int bookId) {
+        LOG.debug("No rates found for rateId={}", bookId);
 
         if (bookId < 1) throw new InvalidInputException("Invalid bookId: " + bookId);
 
-        List<RateEntity> entityList = repository.findByBookId(bookId);
-        List<Rate> list = mapper.entityListToApiList(entityList);
-
-        LOG.debug("/rates response size: {}", list.size());
-
-        return list;
+        return repository.findByBookId(bookId)
+                .log()
+                .map(e -> mapper.entityToApi(e));
     }
 
     @Override
-    public Rate createRate(Rate body) {
-        try {
-            RateEntity entity = mapper.apiToEntity(body);
-            RateEntity newEntity = repository.save(entity);
+    public Mono<Rate> createRate(Rate body) {
+        RateEntity entity = mapper.apiToEntity(body);
+        Mono<Rate> newEntity = repository.save(entity)
+                .log()
+                .onErrorMap(
+                        DuplicateKeyException.class,
+                        ex -> new InvalidInputException("Duplicate key, Book Id: " + body.getBookId() + ", Rate Id:" + body.getRateId()))
+                .map(e -> mapper.entityToApi(e));
 
-            LOG.debug("createRate: created a rate entity: {}/{}", body.getBookId(), body.getRateId());
-            return mapper.entityToApi(newEntity);
-
-        } catch (DataIntegrityViolationException dive) {
-            throw new InvalidInputException("Duplicate key, bookId: " + body.getBookId() + ", rate Id:" + body.getRateId());
-        }
+        return newEntity;
     }
 
     @Override
-    public void deleteRate(int bookId) {
+    public Mono<Void> deleteRate(int bookId) {
         LOG.debug("deleteRates: tries to delete rates for the bookId with bookId: {}", bookId);
-        repository.deleteAll(repository.findByBookId(bookId));
+        return repository.deleteAll(repository.findByBookId(bookId));
     }
 
 }
