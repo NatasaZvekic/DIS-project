@@ -40,17 +40,17 @@ import static reactor.core.publisher.Flux.empty;
 @Component
 public class BookCompositeIntegration implements RateService, ReaderService, CommentsService, BookService {
 
+    private static final String BOOK_SERVICE_URL = "http://book";
+    private static final String RATE_SERVICE_URL = "http://rate";
+    private static final String READER_SERVICE_URL = "http://reader";
+    private static final String COMMENT_SERVICE_URL = "http://comment";
+
     private static final Logger LOG = LoggerFactory.getLogger(BookCompositeIntegration.class);
 
     private final WebClient webClient;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper;
-
-    private final String readerServiceUrl;
-    private final String rateServiceUrl;
-    private final String commentServiceUrl;
-    private final String bookServiceUrl;
 
     private final Scheduler publishEventScheduler;
     private final StreamBridge streamBridge;
@@ -61,34 +61,18 @@ public class BookCompositeIntegration implements RateService, ReaderService, Com
             WebClient.Builder webClient,
             ObjectMapper mapper,
             RestTemplate restTemplate,
-            StreamBridge streamBridge,
-            @Value("${app.book.host}") String bookServiceHost,
-            @Value("${app.book.port}") int bookServicePort,
-
-            @Value("${app.rate.host}") String rateServiceHost,
-            @Value("${app.rate.port}") int rateServicePort,
-
-            @Value("${app.reader.host}") String readerServiceHost,
-            @Value("${app.reader.port}") int readerServicePort,
-
-            @Value("${app.comment.host}") String commentServiceHost,
-            @Value("${app.comment.port}") int commentServicePort
+            StreamBridge streamBridge
     ) {
         this.publishEventScheduler = publishEventScheduler;
         this.restTemplate = restTemplate;
         this.webClient = webClient.build();
         this.mapper = mapper;
         this.streamBridge = streamBridge;
-
-        bookServiceUrl = "http://" + bookServiceHost + ":" + bookServicePort;
-        rateServiceUrl = "http://" + rateServiceHost + ":" + rateServicePort + "/rate";
-        commentServiceUrl = "http://" + commentServiceHost + ":" + commentServicePort + "/comment";
-        readerServiceUrl = "http://" + readerServiceHost + ":" + readerServicePort + "/reader";
     }
 
     @Override
     public Mono<Book> getBook(int bookId) {
-        String url = bookServiceUrl + "/book/" + bookId;
+        String url = BOOK_SERVICE_URL + "/book/" + bookId;
         LOG.debug("Will call getBook API on URL: {}", url);
 
         return webClient.get().uri(url).retrieve().bodyToMono(Book.class).log().onErrorMap(WebClientResponseException.class, ex -> handleException(ex));
@@ -118,7 +102,7 @@ public class BookCompositeIntegration implements RateService, ReaderService, Com
 
     @Override
     public Flux<Comment> getComments(int bookId) {
-        String url = commentServiceUrl + "?bookId=" + bookId;
+        String url = COMMENT_SERVICE_URL + "/comment?bookId=" + bookId;
         LOG.debug("Will call the getComments API on URL: {}", url);
 
         return webClient.get().uri(url).retrieve().bodyToFlux(Comment.class).log().onErrorResume(error -> empty());
@@ -140,7 +124,7 @@ public class BookCompositeIntegration implements RateService, ReaderService, Com
 
     @Override
     public Flux<Rate> getRate(int bookId) {
-        String url = rateServiceUrl + "?bookId=" + bookId;
+        String url = RATE_SERVICE_URL + "/rate?bookId=" + bookId;
         LOG.debug("Will call getRates API on URL: {}", url);
 
         return webClient.get().uri(url).retrieve().bodyToFlux(Rate.class).log().onErrorResume(error -> empty());
@@ -162,7 +146,7 @@ public class BookCompositeIntegration implements RateService, ReaderService, Com
 
     @Override
     public Flux<Reader> getReader(int bookId) {
-        String url = readerServiceUrl + "?bookId=" + bookId;
+        String url = READER_SERVICE_URL + "/reader?bookId=" + bookId;
         LOG.debug("Will call getReader API on URL: {}", url);
 
         return webClient.get().uri(url).retrieve().bodyToFlux(Reader.class).log().onErrorResume(error -> empty());
@@ -239,17 +223,16 @@ public class BookCompositeIntegration implements RateService, ReaderService, Com
     }
 
     public Mono<Health> getBookHealth() {
-        return getHealth("http://" + "book" + ":" + "8080");
+        return getHealth("http://" + BOOK_SERVICE_URL);
     }
     public Mono<Health> getRateHealth() {
-        return getHealth("http://" + "rate" + ":" + "8080");
+        return getHealth("http://" + RATE_SERVICE_URL);
     }
     public Mono<Health> getReaderHealth() {
-        return getHealth("http://" + "reader" + ":" + "8080");
+        return getHealth("http://" + READER_SERVICE_URL);
     }
-
     public Mono<Health> getCommentHealth() {
-        return getHealth("http://" + "comment" + ":" + "8080");
+        return getHealth("http://" + COMMENT_SERVICE_URL);
     }
 
     private Mono<Health> getHealth(String url) {

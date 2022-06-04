@@ -1,19 +1,14 @@
 server.port: 7000
 server.error.include-message: always
 
-app:
-  book:
-    host: localhost
-    port: 7001
-  reader:
-    host: localhost
-    port: 7004
-  rate:
-    host: localhost
-    port: 7003
-  comment:
-    host: localhost
-    port: 7002
+spring.application.name: book-composite
+
+app.eureka-server: localhost
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${app.eureka-server}:8761/eureka/
 
 spring.cloud.stream:
   defaultBinder: rabbit
@@ -46,7 +41,6 @@ spring.rabbitmq:
   username: guest
   password: guest
 
-
 logging:
   level:
     root: INFO
@@ -59,19 +53,7 @@ spring.config.activate.on-profile: docker
 
 server.port: 8080
 
-app:
-  book:
-    host: book
-    port: 8080
-  reader:
-    host: reader
-    port: 8080
-  comment:
-    host: comment
-    port: 8080
-  rate:
-    host: rate
-    port: 8080
+app.eureka-server: eureka
 
 spring.rabbitmq.host: rabbitmq
 

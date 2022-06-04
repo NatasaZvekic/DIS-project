@@ -16,7 +16,7 @@ public interface BookService {
             consumes = "application/json",
             produces = "application/json")
     Mono<Book> createBook(@RequestBody Book body);
-    @DeleteMapping(value = "/book/{bookId}")
+  //  @DeleteMapping(value = "/book/{bookId}")
     Mono<Void> deleteBook(@PathVariable int bookId);
 
 }
