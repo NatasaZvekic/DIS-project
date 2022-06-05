@@ -6,4 +6,5 @@ include ':microservices:book-composite'
 include 'api'
 include 'util'
 include ':spring-cloud:naming-server'
+include ':spring-cloud:api-gateway'
 

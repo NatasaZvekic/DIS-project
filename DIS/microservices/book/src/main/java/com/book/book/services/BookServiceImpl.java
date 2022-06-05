@@ -39,6 +39,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Mono<Book> createBook(Book body) {
+
         if (body.getBookId() < 1) throw new InvalidInputException("Invalid bookId: " + body.getBookId());
 
         BookEntity entity = mapper.apiToEntity(body);
