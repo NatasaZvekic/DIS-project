@@ -40,15 +40,18 @@ public class ReaderServiceImpl implements ReaderService {
 
     @Override
     public Mono<Reader> createReader(Reader body) {
-        ReaderEntity entity = mapper.apiToEntity(body);
-        Mono<Reader> newEntity = repository.save(entity)
-                .log()
-                .onErrorMap(
-                        DuplicateKeyException.class,
-                        ex -> new InvalidInputException("Duplicate key, Book Id: " + body.getBookId() + ", Reader Id:" + body.getReaderId()))
-                .map(e -> mapper.entityToApi(e));
+        if(!repository.findByBookId(body.getBookId()).hasElements().block()) {
+            ReaderEntity entity = mapper.apiToEntity(body);
+            Mono<Reader> newEntity = repository.save(entity)
+                    .log()
+                    .onErrorMap(
+                            DuplicateKeyException.class,
+                            ex -> new InvalidInputException("Duplicate key, Book Id: " + body.getBookId() + ", Reader Id:" + body.getReaderId()))
+                    .map(e -> mapper.entityToApi(e));
 
-        return newEntity;
+            return newEntity;
+        }
+        throw new DuplicateKeyException("Duplicate key");
     }
 
     @Override

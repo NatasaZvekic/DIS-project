@@ -43,15 +43,18 @@ public class CommentServiceImpl implements CommentsService {
 
     @Override
     public Mono<Comment> createComment(Comment body) {
-        CommentEntity entity = mapper.apiToEntity(body);
-        Mono<Comment> newEntity = repository.save(entity)
-                .log()
-                .onErrorMap(
-                        DuplicateKeyException.class,
-                        ex -> new InvalidInputException("Duplicate key, Book Id: " + body.getBookId() + ", Comment Id:" + body.getCommentId()))
-                .map(e -> mapper.entityToApi(e));
+        if(!repository.findByBookId(body.getBookId()).hasElements().block()) {
+            CommentEntity entity = mapper.apiToEntity(body);
+            Mono<Comment> newEntity = repository.save(entity)
+                    .log()
+                    .onErrorMap(
+                            DuplicateKeyException.class,
+                            ex -> new InvalidInputException("Duplicate key, Book Id: " + body.getBookId() + ", Comment Id:" + body.getCommentId()))
+                    .map(e -> mapper.entityToApi(e));
 
-        return newEntity;
+            return newEntity;
+        }
+        throw new DuplicateKeyException("Duplicate key");
     }
 
     @Override

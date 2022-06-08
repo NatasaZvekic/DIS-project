@@ -37,15 +37,18 @@ public class RateServiceImpl implements RateService {
 
     @Override
     public Mono<Rate> createRate(Rate body) {
-        RateEntity entity = mapper.apiToEntity(body);
-        Mono<Rate> newEntity = repository.save(entity)
-                .log()
-                .onErrorMap(
-                        DuplicateKeyException.class,
-                        ex -> new InvalidInputException("Duplicate key, Book Id: " + body.getBookId() + ", Rate Id:" + body.getRateId()))
-                .map(e -> mapper.entityToApi(e));
+        if(!repository.findByBookId(body.getBookId()).hasElements().block()) {
+            RateEntity entity = mapper.apiToEntity(body);
+            Mono<Rate> newEntity = repository.save(entity)
+                    .log()
+                    .onErrorMap(
+                            DuplicateKeyException.class,
+                            ex -> new InvalidInputException("Duplicate key, Book Id: " + body.getBookId() + ", Rate Id:" + body.getRateId()))
+                    .map(e -> mapper.entityToApi(e));
 
-        return newEntity;
+            return newEntity;
+        }
+        throw new DuplicateKeyException("Duplicate key");
     }
 
     @Override
