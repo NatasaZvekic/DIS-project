@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/microservices/reader" />
             <option value="$PROJECT_DIR$/spring-cloud" />
             <option value="$PROJECT_DIR$/spring-cloud/api-gateway" />
+            <option value="$PROJECT_DIR$/spring-cloud/authorization-server" />
             <option value="$PROJECT_DIR$/spring-cloud/naming-server" />
             <option value="$PROJECT_DIR$/util" />
           </set>

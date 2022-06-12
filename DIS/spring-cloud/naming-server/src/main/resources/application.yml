@@ -1,6 +1,14 @@
 server:
   port: 8761
 
+app:
+  eureka-username: test
+  eureka-password: test
+  eureka-server: localhost
+  auth-server: localhost
+
+spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}:9999
+
 eureka:
   instance:
     hostname: localhost

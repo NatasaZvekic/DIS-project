@@ -7,4 +7,5 @@ include 'api'
 include 'util'
 include ':spring-cloud:naming-server'
 include ':spring-cloud:api-gateway'
+include ':spring-cloud:authorization-server'
 

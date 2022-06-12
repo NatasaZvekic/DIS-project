@@ -5,10 +5,16 @@ spring.application.name: book-composite
 
 app.eureka-server: localhost
 
+app:
+  eureka-username: test
+  eureka-password: test
+
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://${app.eureka-server}:8761/eureka/
+      defaultZone: "http://${app.eureka-username}:${app.eureka-password}@${app.eureka-server}:8761/eureka/"
+
+spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}:9999
 
 spring.cloud.stream:
   defaultBinder: rabbit
@@ -53,7 +59,9 @@ spring.config.activate.on-profile: docker
 
 server.port: 8080
 
-app.eureka-server: eureka
+app:
+  eureka-server: eureka
+  auth-server: auth-server
 
 spring.rabbitmq.host: rabbitmq
 

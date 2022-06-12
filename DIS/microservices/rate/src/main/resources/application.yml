@@ -5,10 +5,14 @@ spring.application.name: rate
 
 app.eureka-server: localhost
 
+app:
+  eureka-username: test
+  eureka-password: test
+
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://${app.eureka-server}:8761/eureka/
+      defaultZone: "http://${app.eureka-username}:${app.eureka-password}@${app.eureka-server}:8761/eureka/"
     initialInstanceInfoReplicationIntervalSeconds: 5
     registryFetchIntervalSeconds: 5
   instance:
