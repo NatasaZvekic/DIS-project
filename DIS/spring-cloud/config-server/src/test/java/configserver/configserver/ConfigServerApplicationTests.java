@@ -1,10 +1,10 @@
-//package com.reader.reader;
+//package configserver.configserver;
 //
 //import org.junit.jupiter.api.Test;
 //import org.springframework.boot.test.context.SpringBootTest;
 //
 //@SpringBootTest
-//class ReaderApplicationTests {
+//class ConfigServerApplicationTests {
 //
 //	@Test
 //	void contextLoads() {

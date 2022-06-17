@@ -6,6 +6,8 @@ services:
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_USR=test
+      - CONFIG_SERVER_PWD=test
     depends_on:
       mongodb:
         condition: service_healthy
@@ -17,6 +19,8 @@ services:
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_USR=test
+      - CONFIG_SERVER_PWD=test
     depends_on:
       mongodb:
         condition: service_healthy
@@ -28,6 +32,8 @@ services:
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_USR=test
+      - CONFIG_SERVER_PWD=test
     depends_on:
       mongodb:
         condition: service_healthy
@@ -39,6 +45,8 @@ services:
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_USR=test
+      - CONFIG_SERVER_PWD=test
     depends_on:
       mongodb:
         condition: service_healthy
@@ -50,6 +58,8 @@ services:
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_USR=test
+      - CONFIG_SERVER_PWD=test
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -81,28 +91,41 @@ services:
   eureka:
     build: spring-cloud/naming-server
     mem_limit: 512m
-
-  gateway:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_USR=test
+      - CONFIG_SERVER_PWD=test
+
+  gateway:
     build: spring-cloud/api-gateway
     mem_limit: 512m
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_USR=test
+      - CONFIG_SERVER_PWD=test
     ports:
       - "8443:8443"
     depends_on:
       auth-server:
         condition: service_healthy
 
-
   auth-server:
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
     build: spring-cloud/authorization-server
     mem_limit: 512m
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_USR=test
+      - CONFIG_SERVER_PWD=test
     healthcheck:
       test: ["CMD", "curl", "-fs", "http://localhost:9999/actuator/health"]
       interval: 5s
       timeout: 2s
       retries: 60
 
-
+  config-server:
+    build: spring-cloud/config-server
+    mem_limit: 512m
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,git
+      - SPRING_SECURITY_USER_NAME=test
+      - SPRING_SECURITY_USER_PASSWORD=test

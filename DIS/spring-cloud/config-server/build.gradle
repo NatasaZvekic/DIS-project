@@ -4,7 +4,7 @@ plugins {
 	id 'java'
 }
 
-group = 'se.magnus.springcloud'
+group = 'config-server'
 version = '1.0.0-SNAPSHOT'
 sourceCompatibility = '1.8'
 
@@ -21,13 +21,11 @@ jar {
 }
 
 dependencies {
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.glassfish.jaxb:jaxb-runtime'
+	implementation 'org.springframework.cloud:spring-cloud-config-server'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-	implementation 'org.springframework.cloud:spring-cloud-starter-config'
-	implementation 'org.springframework.retry:spring-retry'
+	testImplementation 'org.springframework.security:spring-security-test'
 }
 
 dependencyManagement {

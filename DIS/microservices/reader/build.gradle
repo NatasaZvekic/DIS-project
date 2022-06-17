@@ -44,6 +44,9 @@ dependencies {
 	testImplementation 'org.testcontainers:mongodb'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+	implementation 'org.springframework.retry:spring-retry'
+
 }
 
 dependencyManagement {
