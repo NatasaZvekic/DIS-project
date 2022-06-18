@@ -129,3 +129,15 @@ services:
       - SPRING_PROFILES_ACTIVE=docker,git
       - SPRING_SECURITY_USER_NAME=test
       - SPRING_SECURITY_USER_PASSWORD=test
+
+  zipkin:
+    image: openzipkin/zipkin:2.23.2
+    mem_limit: 1024m
+    environment:
+      - RABBIT_ADDRESSES=rabbitmq
+      - STORAGE_TYPE=mem
+    ports:
+      - 9411:9411
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

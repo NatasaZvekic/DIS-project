@@ -51,6 +51,9 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 	implementation 'org.springframework.retry:spring-retry'
 
+	implementation 'org.springframework.cloud:spring-cloud-starter-sleuth'
+	implementation 'org.springframework.cloud:spring-cloud-sleuth-zipkin'
+
 }
 
 dependencyManagement {
