@@ -14,19 +14,6 @@ public class BookEntity {
     @Version
     private Integer version;
 
-    @Indexed(unique = true)
-    private int bookId;
-
-    private String bookName;
-
-    public BookEntity() {
-    }
-
-    public BookEntity( int bookId, String name) {
-        this.bookId = bookId;
-        this.bookName = name;
-    }
-
     public String getId() {
         return id;
     }
@@ -42,6 +29,35 @@ public class BookEntity {
     public void setVersion(Integer version) {
         this.version = version;
     }
+
+    @Id
+    private int bookId;
+
+    private String bookName;
+
+    public BookEntity() {
+    }
+
+    public BookEntity( int bookId, String name) {
+        this.bookId = bookId;
+        this.bookName = name;
+    }
+
+//    public String getId() {
+//        return id;
+//    }
+
+  //  public void setId(String id) {
+//        this.id = id;
+//    }
+
+//    public Integer getVersion() {
+//        return version;
+//    }
+//
+//    public void setVersion(Integer version) {
+//        this.version = version;
+//    }
 
     public int getBookId() {
         return bookId;

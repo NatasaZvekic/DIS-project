@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import util.exceptions.InvalidInputException;
 import util.exceptions.NotFoundException;
+
 import static java.util.logging.Level.FINE;
 import static reactor.core.publisher.Mono.error;
 
@@ -38,7 +39,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Mono<Book> createBook(Book body) {
-
         if (body.getBookId() < 1) throw new InvalidInputException("Invalid bookId: " + body.getBookId());
         if(!repository.findByBookId(body.getBookId()).hasElement().block()){
             BookEntity entity = mapper.apiToEntity(body);
@@ -51,11 +51,15 @@ public class BookServiceImpl implements BookService {
         throw new DuplicateKeyException("Duplicate key");
     }
 
+    String exceptionThrower() {
+        throw new RuntimeException();
+    }
+
     @Override
     public Mono<Void> deleteBook(int bookId) {
         LOG.debug("deleteBook: tries to delete an entity with bookId: {}", bookId);
         return repository.findByBookId(bookId).log(LOG.getName(), FINE).map(e -> repository.delete(e)).flatMap(e -> e);
 
-      //  return repository.findByBookId(bookId).log().map(e -> repository.delete(e)).flatMap(e -> e);
+        //  return repository.findByBookId(bookId).log().map(e -> repository.delete(e)).flatMap(e -> e);
     }
 }
