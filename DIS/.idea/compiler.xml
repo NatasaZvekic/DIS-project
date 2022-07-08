@@ -17,6 +17,9 @@
         <module name="DIS.microservices.book.main" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="1.8" />
+    <bytecodeTargetLevel target="1.8">
+      <module name="DIS.main" target="17" />
+      <module name="DIS.test" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>

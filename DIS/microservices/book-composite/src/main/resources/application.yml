@@ -1,5 +1,7 @@
 spring.config.import: "configserver:"
 
+spring.profiles.active: docker
+
 spring:
   application.name: book-composite
   cloud.config:
@@ -14,6 +16,8 @@ spring:
     password: test
 
 ---
-spring.config.activate.on-profile: docker
+#spring.config.activate.on-profile: docker
 
 spring.cloud.config.uri: http://config-server:8888
+
+

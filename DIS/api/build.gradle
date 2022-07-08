@@ -1,24 +1,9 @@
-buildscript {
-    ext {
-        springBootVersion = '2.3.2.RELEASE'
-    }
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-    }
-}
-
 plugins {
-    id "io.spring.dependency-management" version "1.0.9.RELEASE"
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
 }
 
-
-apply plugin: 'java'
-apply plugin: 'eclipse'
-
-group = 'microservices.api'
+group = 'api.api'
 version = '1.0.0-SNAPSHOT'
 sourceCompatibility = 1.8
 
@@ -26,11 +11,18 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation('org.springframework.boot:spring-boot-starter-webflux')
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
+ext {
+    springBootVersion = '2.5.2'
 }
 
-dependencyManagement {
-    imports { mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}") }
+dependencies {
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springdoc:springdoc-openapi-common:1.5.9'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+    useJUnitPlatform()
 }

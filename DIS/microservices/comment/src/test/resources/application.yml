@@ -1,0 +1,12 @@
+#Disable discovery
+spring.cloud.discovery.enabled: false
+
+spring.cloud.config.discovery.enabled: false
+spring.cloud.config.enabled: false
+
+server.error.include-message: always
+
+spring.cloud.stream.defaultBinder: rabbit
+
+
+

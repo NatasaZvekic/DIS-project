@@ -1,86 +1,85 @@
-//package com.bookcomposite.bookcomposite;
-//
-//import com.bookcomposite.bookcomposite.services.BookCompositeIntegration;
-//import composite.book.BookAggregate;
-//import core.book.Book;
-//import core.comments.Comment;
-//import core.rates.Rate;
-//import core.readers.Reader;
-//import org.junit.Before;
-//import org.junit.Test;
-//import org.junit.runner.RunWith;
-//
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.boot.test.mock.mockito.MockBean;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.test.context.junit4.SpringRunner;
-//import org.springframework.test.web.reactive.server.WebTestClient;
-//
-//import static java.util.Collections.singletonList;
-//import static org.mockito.Mockito.when;
-//import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-//import static org.springframework.http.HttpStatus.OK;
-//import static reactor.core.publisher.Mono.just;
-//@RunWith(SpringRunner.class)
-//@SpringBootTest(webEnvironment=RANDOM_PORT)
-//public class BookCompositeApplicationTests {
-//
-//	private static final int BOOK_ID_OK = 1;
-//	@Autowired
-//	private WebTestClient client;
-//
-//	@Test
-//	public void contextLoads() {
-//	}
-//
-//	@MockBean
-//	private BookCompositeIntegration compositeIntegration;
-//
-//	@Before
-//	public void setUp() {
-//
-//		when(compositeIntegration.getBook(BOOK_ID_OK)).
-//				thenReturn(new Book(BOOK_ID_OK, "name"));
-//		when(compositeIntegration.getComments(BOOK_ID_OK)).
-//				thenReturn(singletonList(new Comment(BOOK_ID_OK, 1, "comment")));
-//		when(compositeIntegration.getRate(BOOK_ID_OK)).
-//				thenReturn(singletonList(new Rate(BOOK_ID_OK, 1, 4)));
-//		when(compositeIntegration.getReader(BOOK_ID_OK)).
-//				thenReturn(singletonList(new Reader(BOOK_ID_OK, 1, "firstName", "lastName")));
-//	}
-//
-//	@Test
-//	public void createCompositeBook() {
-//		BookAggregate compositeBook = new BookAggregate(145, null, null, null, "name");
-//		postAndVerifyBook(compositeBook, OK);
-//	}
-//
-//	private void postAndVerifyBook(BookAggregate compositeBook, HttpStatus expectedStatus) {
-//		client.post()
-//				.uri("/book-composite")
-//				.body(just(compositeBook), BookAggregate.class)
-//				.exchange()
-//				.expectStatus().isEqualTo(expectedStatus);
-//	}
-//
-//	@Test
-//	public void deleteCompositeBook() {
-//		BookAggregate bookAggregate = new BookAggregate(1,
-//				singletonList(new Comment(1,4, "a")),
-//				singletonList(new Reader(1, 34, "s", "c")),
-//				singletonList(new Rate(1, 43, 1)), "name");
-//
-//		postAndVerifyBook(bookAggregate, OK);
-//
-//		deleteAndVerifyBook(bookAggregate.getBookId(), OK);
-//	}
-//
-//	private void deleteAndVerifyBook(int bookId, HttpStatus expectedStatus) {
-//		client.delete()
-//				.uri("/book-composite/" + bookId)
-//				.exchange()
-//				.expectStatus().isEqualTo(expectedStatus);
-//	}
-//
-//}
+package com.bookcomposite.bookcomposite;
+
+import com.bookcomposite.bookcomposite.services.BookCompositeIntegration;
+import com.bookcomposite.bookcomposite.services.BookCompositeServiceImpl;
+import core.book.Book;
+import core.comments.Comment;
+import core.rates.Rate;
+import core.readers.Reader;
+import exceptions.InvalidInputException;
+import exceptions.NotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+@SpringBootTest(
+        webEnvironment = RANDOM_PORT,
+        classes = {TestSecurityConfig.class},
+        properties = {
+                "spring.security.oauth2.resourceserver.jwt.issuer-uri=",
+                "spring.main.allow-bean-definition-overriding=true",
+                "eureka.client.enabled=false",
+                "spring.cloud.config.enabled=false"})
+class BookCompositeApplicationTests {
+    private static final int BOOK_ID_OK = 30;
+    private static final int BOOK_ID_NOT_FOUND = 2;
+    private static final int BOOK_ID_INVALID = 7;
+
+    @Autowired
+    private WebTestClient client;
+
+    @Autowired
+    private BookCompositeServiceImpl service;
+
+    @MockBean
+    private BookCompositeIntegration compositeIntegration;
+
+    @BeforeEach
+    void setUp() {
+        when(compositeIntegration.getBook(BOOK_ID_OK)).thenReturn(Mono.just(new Book(BOOK_ID_OK, "test")));
+        when(compositeIntegration.getReader(BOOK_ID_OK)).thenReturn(Flux.fromIterable(singletonList(new Reader(BOOK_ID_OK, 1, "test", "test"))));
+        when(compositeIntegration.getRate(BOOK_ID_OK)).thenReturn(Flux.fromIterable(singletonList(new Rate(BOOK_ID_OK, 1, 5))));
+        when(compositeIntegration.getComments(BOOK_ID_OK)).thenReturn(Flux.fromIterable(singletonList(new Comment(BOOK_ID_OK, 1, "comment"))));
+        when(compositeIntegration.getBook(BOOK_ID_INVALID)).thenThrow(new InvalidInputException("Invalid bookId"));
+        when(compositeIntegration.getComments(BOOK_ID_INVALID)).thenThrow(new InvalidInputException("Invalid bookId"));
+        when(compositeIntegration.getRate(BOOK_ID_INVALID)).thenThrow(new InvalidInputException("Invalid bookId"));
+        when(compositeIntegration.getReader(BOOK_ID_INVALID)).thenThrow(new InvalidInputException("Invalid bookId"));
+
+        when(compositeIntegration.getBook(BOOK_ID_NOT_FOUND)).thenThrow(new NotFoundException("Not found" ));
+    }
+
+    @Test
+    void contextLoads() {
+    }
+
+    @Test
+    void getBookById() {
+        assertNotNull(service.getBookComposite(BOOK_ID_OK).block());
+    }
+    @Test
+    void getBookNotFound() {
+        NotFoundException thrown = assertThrows(
+                NotFoundException.class,
+                () -> service.getBookComposite(BOOK_ID_NOT_FOUND),
+                "Expected a InvalidInputException here!");
+        assertEquals("Not found", thrown.getMessage());
+    }
+
+    @Test
+    void getBookInvalidInput() {
+        InvalidInputException thrown = assertThrows(
+                InvalidInputException.class,
+                () -> service.getBookComposite(BOOK_ID_INVALID),
+                "Expected a InvalidInputException here!");
+        assertEquals("Invalid bookId", thrown.getMessage());
+    }
+
+}

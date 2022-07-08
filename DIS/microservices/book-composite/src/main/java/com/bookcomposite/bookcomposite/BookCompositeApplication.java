@@ -12,11 +12,9 @@ import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,11 +39,6 @@ public class BookCompositeApplication {
 	public Scheduler publishEventScheduler() {
 		LOG.info("Creates a messagingScheduler with connectionPoolSize = {}", threadPoolSize);
 		return Schedulers.newBoundedElastic(threadPoolSize, taskQueueSize, "publish-pool");
-	}
-
-	@Bean
-	RestTemplate restTemplate() {
-		return new RestTemplate();
 	}
 
 	@Autowired

@@ -4,13 +4,14 @@ import com.rate.rate.persistence.RateEntity;
 import com.rate.rate.persistence.RateRepository;
 import core.rates.Rate;
 import core.rates.RateService;
+import exceptions.InvalidInputException;
+import exceptions.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import util.exceptions.InvalidInputException;
 
 @RestController
 public class RateServiceImpl implements RateService {
@@ -26,9 +27,9 @@ public class RateServiceImpl implements RateService {
 
     @Override
     public Flux<Rate> getRate(int bookId) {
-        LOG.debug("No rates found for rateId={}", bookId);
-
-        if (bookId < 1) throw new InvalidInputException("Invalid bookId: " + bookId);
+        if (bookId < 1)  {
+            throw new InvalidInputException("Invalid bookId");
+        }
 
         return repository.findByBookId(bookId)
                 .log()
@@ -37,7 +38,9 @@ public class RateServiceImpl implements RateService {
 
     @Override
     public Mono<Rate> createRate(Rate body) {
-        if(!repository.findByBookId(body.getBookId()).hasElements().block()) {
+        if (body.getBookId() < 1) throw new InvalidInputException("Invalid bookId");
+
+        if(Boolean.FALSE.equals(repository.findByBookId(body.getBookId()).hasElements().block())) {
             RateEntity entity = mapper.apiToEntity(body);
             Mono<Rate> newEntity = repository.save(entity)
                     .log()

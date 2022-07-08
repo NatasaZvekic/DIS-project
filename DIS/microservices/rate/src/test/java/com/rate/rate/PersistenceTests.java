@@ -1,64 +1,75 @@
-//package com.rate.rate;
-//
-//import com.rate.rate.persistence.RateEntity;
-//import com.rate.rate.persistence.RateRepository;
-//import org.junit.Before;
-//import org.junit.Test;
-//import org.junit.runner.RunWith;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-//import org.springframework.test.context.junit4.SpringRunner;
-//
-//import java.util.List;
-//
-//import static org.junit.Assert.assertEquals;
-//import static org.junit.Assert.assertFalse;
-//
-//@RunWith(SpringRunner.class)
-//@DataMongoTest
-//public class PersistenceTests {
-//
-//    @Autowired
-//    private RateRepository repository;
-//
-//    private RateEntity savedEntity;
-//
-//    @Before
-//   	public void setupDb() {
-//   		repository.deleteAll();
-//        RateEntity entity = new RateEntity(1, 1, 8);
-//        savedEntity = repository.save(entity);
-//
-//        assertEquals(entity, savedEntity);
-//    }
-//
-//
-//    @Test
-//    public void getByBookId() {
-//        List<RateEntity> entityList = repository.findByBookId(savedEntity.getBookId());
-//        assertEquals(1, entityList.size());
-//    }
-//
-//    @Test
-//   	public void create() {
-//        RateEntity newEntity = new RateEntity(7, 1, 10);
-//        repository.save(newEntity);
-//
-//        assertEquals(2, repository.count());
-//    }
-//
-//    @Test
-//   	public void update() {
-//        savedEntity.setRate(10);
-//        repository.save(savedEntity);
-//
-//        RateEntity foundEntity = repository.findById(savedEntity.getId()).get();
-//        assertEquals(10, foundEntity.getRate());
-//    }
-//
-//    @Test
-//   	public void delete() {
-//        repository.delete(savedEntity);
-//        assertFalse(repository.existsById(savedEntity.getId()));
-//    }
-//}
+package com.rate.rate;
+
+
+import com.rate.rate.persistence.RateEntity;
+import com.rate.rate.persistence.RateRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import reactor.test.StepVerifier;
+import java.util.Objects;
+import static org.junit.Assert.assertTrue;
+
+@DataMongoTest
+public class PersistenceTests extends MongoDbTestBase {
+
+    @Autowired
+    private RateRepository repository;
+
+
+    private RateEntity savedEntity;
+
+    @BeforeEach
+    public void setupDb() {
+        StepVerifier.create(repository.deleteAll()).verifyComplete();
+    }
+
+    @Test
+    public void getRateByBookId() {
+        RateEntity comment = new RateEntity(1, 1, 4);
+        repository.save(comment).block();
+        StepVerifier.create(repository.existsById(comment.getId())).expectNext(true).verifyComplete();
+    }
+
+    @Test
+    public void create() {
+        RateEntity entity = new RateEntity(1, 1,5);
+        RateEntity entity2 = new RateEntity(1, 2, 2);
+        RateEntity entity3 = new RateEntity(1, 3, 9);
+        repository.save(entity).block();
+        repository.save(entity2).block();
+        repository.save(entity3).block();
+
+        StepVerifier.create(repository.count())
+                .assertNext(count -> {
+                    assertTrue(count == 3);
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    public void update() {
+        int updatedRate = 10;
+        RateEntity entity = new RateEntity(1, 1, 9);
+        repository.save(entity).block();
+        entity.setRate(updatedRate);
+        repository.save(entity).block();
+
+        StepVerifier.create(repository.findByBookId(entity.getBookId()))
+                .assertNext(updatedEntity -> {
+                    assertTrue(Objects.equals(updatedEntity.getRate(), updatedRate));
+                })
+                .verifyComplete();
+    }
+
+
+    @Test
+    void delete() {
+        RateEntity entity = new RateEntity(1,1,  4);
+        repository.save(entity).block();
+        repository.delete(entity).block();
+        StepVerifier.create(repository.existsById(entity.getId())).expectNext(false).verifyComplete();
+    }
+
+}

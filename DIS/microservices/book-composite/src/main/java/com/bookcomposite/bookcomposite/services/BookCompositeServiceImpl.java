@@ -6,17 +6,17 @@ import core.book.Book;
 import core.comments.Comment;
 import core.rates.Rate;
 import core.readers.Reader;
+import exceptions.InvalidInputException;
+import exceptions.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import util.exceptions.NotFoundException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import static java.util.logging.Level.FINE;
 
 
@@ -40,10 +40,34 @@ public class BookCompositeServiceImpl implements BookCompositeService {
                         integration.getReader(bookId).collectList(),
                         integration.getRate(bookId).collectList())
                 .doOnError(ex -> LOG.warn("getBookComposite failed: {}", ex.toString()))
+                .onErrorMap(WebClientResponseException.class, ex -> handleException(ex))
                 .log();
 
     }
 
+    private Throwable handleException(Throwable ex) {
+
+        if (!(ex instanceof WebClientResponseException)) {
+            LOG.warn("Got a unexpected error: {}, will rethrow it", ex.toString());
+            return ex;
+        }
+
+        WebClientResponseException wcre = (WebClientResponseException) ex;
+
+        switch (wcre.getStatusCode()) {
+
+            case NOT_FOUND:
+                return new NotFoundException((wcre));
+
+            case UNPROCESSABLE_ENTITY:
+                return new InvalidInputException((wcre));
+
+            default:
+                LOG.warn("Got a unexpected HTTP error: {}, will rethrow it", wcre.getStatusCode());
+                LOG.warn("Error body: {}", wcre.getResponseBodyAsString());
+                return ex;
+        }
+    }
     @Override
     public Mono<Void> createCompositeBook(BookAggregate body) {
         try {
@@ -60,8 +84,8 @@ public class BookCompositeServiceImpl implements BookCompositeService {
                 });
             }
 
-            Reader reader2 = new Reader(body.getBookId(), 3, "d", "F");
-            integration.createReader(reader2);
+//            Reader reader2 = new Reader(body.getBookId(), 3, "d", "F");
+//            integration.createReader(reader2);
 
             if (body.getReaders() != null) {
                 body.getReaders().forEach(r -> {
