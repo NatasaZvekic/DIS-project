@@ -2,28 +2,12 @@ package com.book.book;
 
 import com.book.book.perstistence.BookEntity;
 import com.book.book.perstistence.BookRepository;
-import com.book.book.services.BookServiceImpl;
-import core.book.BookService;
-import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.testcontainers.containers.MongoDBContainer;
 import reactor.test.StepVerifier;
-
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-
 import static org.junit.Assert.*;
 
 @DataMongoTest
