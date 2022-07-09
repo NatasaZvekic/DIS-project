@@ -86,6 +86,6 @@ public class BookServiceImpl implements BookService {
         LOG.debug("deleteBook: tries to delete an entity with bookId: {}", bookId);
         return repository.findByBookId(bookId).log(LOG.getName(), FINE).map(e -> repository.delete(e)).flatMap(e -> e);
 
-      //  return repository.findByBookId(bookId).log().map(e -> repository.delete(e)).flatMap(e -> e);
+        //  return repository.findByBookId(bookId).log().map(e -> repository.delete(e)).flatMap(e -> e);
     }
 }
