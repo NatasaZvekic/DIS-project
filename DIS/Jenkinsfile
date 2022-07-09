@@ -1,0 +1,10 @@
+pipeline{
+  agent any
+  stager{
+    stage('Build'){
+      steps{
+        echo 'build'
+      }  
+    }
+  }
+}
