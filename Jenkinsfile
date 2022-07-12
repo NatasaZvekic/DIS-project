@@ -18,14 +18,14 @@ pipeline{
      stage('Docker build'){
       steps{
      
-          sh 'docker-compose -f docker-compose-test.yml build && docker-compose -f docker-compose-test.yml up -d'
+          sh 'docker-compose -f docker-compose-prod.yml build && docker-compose -f docker-compose-prod.yml up -d'
     
       }
     }
   }
   post { 
         always { 
-            sh 'docker-compose -f docker-compose-test.yml down'
+            sh 'docker-compose -f docker-compose-prod.yml down'
         }
     }
 }
